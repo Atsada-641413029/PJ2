@@ -212,4 +212,93 @@ class Auth {
             exit;
         }
     }
+    /**
+     * Check if user has specific permission
+     * Automatically returns true for user_id 1 (Super Admin)
+     */
+    public function hasPermission($permissionName, $userId = null) {
+        if (!$this->isLoggedIn() && !$userId) {
+            return false;
+        }
+
+        if (!$userId) {
+            $userId = $_SESSION['user_id'];
+        }
+
+        // Super Admin (ID 1) has all permissions
+        if ($userId == 1) {
+            return true;
+        }
+
+        try {
+            // Check session cache first for current user
+            if ($userId == $_SESSION['user_id'] && isset($_SESSION['permissions'])) {
+                return in_array($permissionName, $_SESSION['permissions']);
+            }
+
+            $stmt = $this->db->prepare("SELECT 1 FROM admin_permissions WHERE user_id = ? AND permission_name = ?");
+            $stmt->execute([$userId, $permissionName]);
+            return $stmt->fetch() ? true : false;
+        } catch (PDOException $e) {
+            error_log("Permission check error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get all permissions for a user
+     */
+    public function getUserPermissions($userId) {
+        // Super Admin has all permissions
+        if ($userId == 1) {
+            return [
+                'manage_admins', 'manage_users', 'manage_sellers', 
+                'manage_products', 'manage_categories', 'view_reports', 'manage_settings'
+            ];
+        }
+
+        try {
+            $stmt = $this->db->prepare("SELECT permission_name FROM admin_permissions WHERE user_id = ?");
+            $stmt->execute([$userId]);
+            return $stmt->fetchAll(PDO::FETCH_COLUMN);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Grant permission to user
+     */
+    public function grantPermission($userId, $permissionName) {
+        if (!$this->hasRole('admin')) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->db->prepare("INSERT IGNORE INTO admin_permissions (user_id, permission_name, granted_by) VALUES (?, ?, ?)");
+            $stmt->execute([$userId, $permissionName, $_SESSION['user_id']]);
+            return true;
+        } catch (PDOException $e) {
+            error_log("Grant permission error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Revoke permission from user
+     */
+    public function revokePermission($userId, $permissionName) {
+        if (!$this->hasRole('admin')) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->db->prepare("DELETE FROM admin_permissions WHERE user_id = ? AND permission_name = ?");
+            $stmt->execute([$userId, $permissionName]);
+            return true;
+        } catch (PDOException $e) {
+            error_log("Revoke permission error: " . $e->getMessage());
+            return false;
+        }
+    }
 }

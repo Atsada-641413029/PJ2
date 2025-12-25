@@ -16,6 +16,9 @@
         <li><a href="categories.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'categories.php' ? 'active' : ''; ?>"><span class="menu-icon">📑</span> หมวดหมู่</a></li>
         <li><a href="reports.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : ''; ?>"><span class="menu-icon">📈</span> รายงาน</a></li>
         <li><a href="settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>"><span class="menu-icon">⚙️</span> ตั้งค่า</a></li>
+        <?php if (isset($auth) && $auth->hasPermission('manage_admins')): ?>
+        <li><a href="manage-admins.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage-admins.php' ? 'active' : ''; ?>"><span class="menu-icon">🔐</span> จัดการ Admin</a></li>
+        <?php endif; ?>
         <li><a href="../api/logout.php" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;"><span class="menu-icon">🚪</span> ออกจากระบบ</a></li>
     </ul>
 </div>

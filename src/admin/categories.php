@@ -1,4 +1,11 @@
-<?php require_once 'auth-check.php'; ?>
+<?php 
+require_once 'auth-check.php'; 
+
+if (!$auth->hasPermission('manage_categories')) {
+    header('Location: index.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>

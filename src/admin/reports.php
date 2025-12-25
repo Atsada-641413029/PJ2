@@ -1,4 +1,11 @@
-<?php require_once 'auth-check.php'; ?>
+<?php 
+require_once 'auth-check.php'; 
+
+if (!$auth->hasPermission('view_reports')) {
+    header('Location: index.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
